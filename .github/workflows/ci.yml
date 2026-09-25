@@ -28,12 +28,12 @@ jobs:
       - name: Build SQL Database Project
         shell: pwsh
         run: |
-          dotnet build Database/CICDDemoDB/CICDDemoDB.sqlproj --configuration Release
+          dotnet build CICDDemoDB/CICDDemoDB.sqlproj --configuration Release
 
       - name: Verify DACPAC
         shell: pwsh
         run: |
-          $dacpac = "Database/CICDDemoDB/bin/Release/CICDDemoDB.dacpac"
+          $dacpac = "CICDDemoDB/bin/Release/CICDDemoDB.dacpac"
 
           if (!(Test-Path $dacpac)) {
               throw "DACPAC was not created."
