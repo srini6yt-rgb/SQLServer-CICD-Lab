@@ -1,0 +1,51 @@
+name: SQL Server CD
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  deploy-dev:
+
+    runs-on: self-hosted
+
+    steps:
+
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Build SQL Project
+        shell: powershell
+        run: |
+          dotnet build `
+            CICDDemoDB/CICDDemoDB.sqlproj `
+            --configuration Release
+
+      - name: Install SqlPackage
+        shell: powershell
+        run: |
+          dotnet tool update `
+            --global Microsoft.SqlPackage
+
+      - name: Add dotnet tools to PATH
+        shell: powershell
+        run: |
+          $env:PATH += ";$env:USERPROFILE\.dotnet\tools"
+          [Environment]::SetEnvironmentVariable(
+            "PATH",
+            $env:PATH,
+            "User"
+          )
+
+      - name: Deploy DEV
+        shell: powershell
+        run: |
+          sqlpackage `
+            /Action:Publish `
+            /SourceFile:"CICDDemoDB/bin/Release/CICDDemoDB.dacpac" `
+            /TargetConnectionString:"Server=localhost;Database=CICD_DEV;Integrated Security=True;TrustServerCertificate=True"
